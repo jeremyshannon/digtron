@@ -6,18 +6,18 @@ digtron.soft_digger_colorize = "#88880030"
 
 -- A global dictionary is used here so that other substitutions can be added easily by other mods, if necessary
 digtron.builder_read_item_substitutions = {
-	["default:torch_ceiling"] = "default:torch",
-	["default:torch_wall"] = "default:torch",
-	["default:dirt_with_grass"] = "default:dirt",
-	["default:dirt_with_grass_footsteps"] = "default:dirt",
-	["default:dirt_with_dry_grass"] = "default:dirt",
-	["default:dirt_with_rainforest_litter"] = "default:dirt",
-	["default:dirt_with_snow"] = "default:dirt",
-	["default:furnace_active"] = "default:furnace",
-	["farming:soil"] = "default:dirt",
-	["farming:soil_wet"] = "default:dirt",
-	["farming:desert_sand_soil"] = "default:desert_sand",
-	["farming:desert_sand_soil_wet"] = "default:desert_sand",
+	["hades_core:torch_ceiling"] = "hades_core:torch",
+	["hades_core:torch_wall"] = "hades_core:torch",
+	["hades_core:dirt_with_grass"] = "hades_core:dirt",
+	["hades_core:dirt_with_grass_footsteps"] = "hades_core:dirt",
+	["hades_core:dirt_with_dry_grass"] = "hades_core:dirt",
+	["hades_core:dirt_with_rainforest_litter"] = "hades_core:dirt",
+	["hades_core:dirt_with_snow"] = "hades_core:dirt",
+	["hades_core:furnace_active"] = "hades_core:furnace",
+	["farming:soil"] = "hades_core:dirt",
+	["farming:soil_wet"] = "hades_core:dirt",
+	["farming:desert_sand_soil"] = "hades_core:desert_sand",
+	["farming:desert_sand_soil_wet"] = "hades_core:desert_sand",
 }
 
 -- Sometimes we want builder heads to call an item's "on_place" method, other times we
@@ -26,7 +26,7 @@ digtron.builder_read_item_substitutions = {
 
 --first exact matches are tested, and the value given in this global table is returned
 digtron.builder_on_place_items = {
-	["default:torch"] = true,
+	["hades_core:torch"] = true,
 }
 
 -- Then a string prefix is checked, returning this value. Useful for enabling on_placed on a mod-wide basis.

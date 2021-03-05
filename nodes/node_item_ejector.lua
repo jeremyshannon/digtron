@@ -2,15 +2,19 @@
 local MP = minetest.get_modpath(minetest.get_current_modname())
 local S, NS = dofile(MP.."/intllib.lua")
 
+gui_bg     = ""
+gui_bg_img = ""
+gui_slots  = ""
+
 --Build up the formspec, somewhat complicated due to multiple mod options
 local pipeworks_path = minetest.get_modpath("pipeworks")
 local doc_path = minetest.get_modpath("doc")
 local formspec_width = 1.5
 
 local ejector_formspec_string = 
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots
+	gui_bg ..
+	gui_bg_img ..
+	gui_slots
 
 if doc_path then
 	ejector_formspec_string = ejector_formspec_string ..
@@ -31,7 +35,7 @@ local ejector_formspec = function(pos, meta)
 		"tooltip[autoeject;" .. S("When checked, will eject items automatically with every Digtron cycle.\nItem ejectors can always be operated manually by punching them.") .. "]"
 end
 
-local function eject_items(pos, node, player, eject_even_without_pipeworks, layout)
+local function eject_items(pos, node, player, eject_even_without_pipeworks)
 	local dir = minetest.facedir_to_dir(node.param2)
 	local destination_pos = vector.add(pos, dir)
 	local destination_node_name = minetest.get_node(destination_pos).name
@@ -41,7 +45,7 @@ local function eject_items(pos, node, player, eject_even_without_pipeworks, layo
 	
 	local insert_into_pipe = false
 	local eject_into_world = false
-	if pipeworks_path and minetest.get_item_group(destination_node_name, "tubedevice") > 0 then
+	if pipeworks_path and minetest.get_node_group(destination_node_name, "tubedevice") > 0 then
 		insert_into_pipe = true
 	elseif eject_even_without_pipeworks then
 		if destination_node_def and not destination_node_def.walkable then
@@ -54,23 +58,19 @@ local function eject_items(pos, node, player, eject_even_without_pipeworks, layo
 		return false
 	end	
 
-	if layout == nil then
-		layout = DigtronLayout.create(pos, player)
-	end
+	local layout = DigtronLayout.create(pos, player)
 
 	-- Build a list of all the items that builder nodes want to use.
 	local filter_items = {}
-	if layout.builders ~= nil then
-		for _, node_image in pairs(layout.builders) do
-			filter_items[node_image.meta.inventory.main[1]:get_name()] = true
-		end
+	for _, node_image in pairs(layout.builders) do
+		filter_items[node_image.meta.inventory.main[1]:get_name()] = true
 	end
 	
 	-- Look through the inventories and find an item that's not on that list.
 	local source_node = nil
 	local source_index = nil
 	local source_stack = nil
-	for _, node_image in pairs(layout.inventories or {}) do
+	for _, node_image in pairs(layout.inventories) do
 		if type(node_image.meta.inventory.main) ~= "table" then
 			node_image.meta.inventory.main = {}
 		end
@@ -79,7 +79,6 @@ local function eject_items(pos, node, player, eject_even_without_pipeworks, layo
 				source_node = node_image
 				source_index = index
 				source_stack = item_stack
-				node_image.meta.inventory.main[index] = nil
 				break
 			end
 		end
@@ -144,9 +143,9 @@ minetest.register_node("digtron:inventory_ejector", {
 		eject_items(pos, node, player, true)
 	end,
 	
-	execute_eject = function(pos, node, player, layout)
+	execute_eject = function(pos, node, player)
 		local meta = minetest.get_meta(pos)
-		eject_items(pos, node, player, meta:get_string("nonpipe") == "true", layout)
+		eject_items(pos, node, player, meta:get_string("nonpipe") == "true")
 	end,
 	
 	on_receive_fields = function(pos, formname, fields, sender)

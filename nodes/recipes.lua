@@ -12,43 +12,43 @@ minetest.register_craftitem("digtron:digtron_core", {
 minetest.register_craft({
 	output = "digtron:digtron_core",
 	recipe = {
-			{"","default:steel_ingot",""},
-			{"default:steel_ingot","default:mese_crystal_fragment","default:steel_ingot"},
-			{"","default:steel_ingot",""}
+			{"","hades_core:steel_ingot",""},
+			{"hades_core:steel_ingot","hades_core:mese_crystal_fragment","hades_core:steel_ingot"},
+			{"","hades_core:steel_ingot",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:controller",
 	recipe = {
-			{"","default:mese_crystal",""},
-			{"default:mese_crystal","digtron:digtron_core","default:mese_crystal"},
-			{"","default:mese_crystal",""}
+			{"","hades_core:mese_crystal",""},
+			{"hades_core:mese_crystal","digtron:digtron_core","hades_core:mese_crystal"},
+			{"","hades_core:mese_crystal",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:auto_controller",
 	recipe = {
-			{"default:mese_crystal","default:mese_crystal","default:mese_crystal"},
-			{"default:mese_crystal","digtron:digtron_core","default:mese_crystal"},
-			{"default:mese_crystal","default:mese_crystal","default:mese_crystal"}
+			{"hades_core:mese_crystal","hades_core:mese_crystal","hades_core:mese_crystal"},
+			{"hades_core:mese_crystal","digtron:digtron_core","hades_core:mese_crystal"},
+			{"hades_core:mese_crystal","hades_core:mese_crystal","hades_core:mese_crystal"}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:builder",
 	recipe = {
-			{"","default:mese_crystal_fragment",""},
-			{"default:mese_crystal_fragment","digtron:digtron_core","default:mese_crystal_fragment"},
-			{"","default:mese_crystal_fragment",""}
+			{"","hades_core:mese_crystal_fragment",""},
+			{"hades_core:mese_crystal_fragment","digtron:digtron_core","hades_core:mese_crystal_fragment"},
+			{"","hades_core:mese_crystal_fragment",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:light",
 	recipe = {
-			{"","default:torch",""},
+			{"","hades_torches:torch",""},
 			{"","digtron:digtron_core",""},
 			{"","",""}
 			}
@@ -57,25 +57,25 @@ minetest.register_craft({
 minetest.register_craft({
 	output = "digtron:digger",
 	recipe = {
-			{"","default:diamond",""},
-			{"default:diamond","digtron:digtron_core","default:diamond"},
-			{"","default:diamond",""}
+			{"","hades_core:diamond",""},
+			{"hades_core:diamond","digtron:digtron_core","hades_core:diamond"},
+			{"","hades_core:diamond",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:soft_digger",
 	recipe = {
-			{"","default:steel_ingot",""},
-			{"default:steel_ingot","digtron:digtron_core","default:steel_ingot"},
-			{"","default:steel_ingot",""}
+			{"","hades_core:steel_ingot",""},
+			{"hades_core:steel_ingot","digtron:digtron_core","hades_core:steel_ingot"},
+			{"","hades_core:steel_ingot",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:inventory",
 	recipe = {
-			{"","default:chest",""},
+			{"","hades_chests:chest",""},
 			{"","digtron:digtron_core",""},
 			{"","",""}
 			}
@@ -84,7 +84,7 @@ minetest.register_craft({
 minetest.register_craft({
 	output = "digtron:fuelstore",
 	recipe = {
-			{"","default:furnace",""},
+			{"","hades_furnaces:furnace",""},
 			{"","digtron:digtron_core",""},
 			{"","",""}
 			}
@@ -95,9 +95,9 @@ if minetest.get_modpath("technic") then
 	minetest.register_craft({
 		output = "digtron:battery_holder",
 		recipe = {
-				{"","default:chest",""},
+				{"","hades_chests:chest",""},
 				{"","digtron:digtron_core",""},
-				{"","default:steel_ingot",""}
+				{"","hades_core:steel_ingot",""}
 				}
 	})
 	
@@ -114,43 +114,43 @@ end
 minetest.register_craft({
 	output = "digtron:combined_storage",
 	recipe = {
-			{"","default:furnace",""},
+			{"","hades_furnaces:furnace",""},
 			{"","digtron:digtron_core",""},
-			{"","default:chest",""}
+			{"","hades_chests:chest",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:pusher",
 	recipe = {
-			{"","default:coal_lump",""},
-			{"default:coal_lump","digtron:digtron_core","default:coal_lump"},
-			{"","default:coal_lump",""}
+			{"","hades_core:coal_lump",""},
+			{"hades_core:coal_lump","digtron:digtron_core","hades_core:coal_lump"},
+			{"","hades_core:coal_lump",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:axle",
 	recipe = {
-			{"default:coal_lump","default:coal_lump","default:coal_lump"},
-			{"default:coal_lump","digtron:digtron_core","default:coal_lump"},
-			{"default:coal_lump","default:coal_lump","default:coal_lump"}
+			{"hades_core:coal_lump","hades_core:coal_lump","hades_core:coal_lump"},
+			{"hades_core:coal_lump","digtron:digtron_core","hades_core:coal_lump"},
+			{"hades_core:coal_lump","hades_core:coal_lump","hades_core:coal_lump"}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:empty_crate",
 	recipe = {
-			{"","default:chest",""},
+			{"","hades_chests:chest",""},
 			{"","digtron:digtron_core",""},
-			{"","default:mese_crystal",""}
+			{"","hades_core:mese_crystal",""}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:empty_locked_crate",
 	type = "shapeless",
-	recipe = {"default:steel_ingot", "digtron:empty_crate"},
+	recipe = {"hades_core:steel_ingot", "digtron:empty_crate"},
 })
 
 minetest.register_craft({
@@ -162,18 +162,18 @@ minetest.register_craft({
 minetest.register_craft({
 	output = "digtron:duplicator",
 	recipe = {
-			{"default:mese_crystal","default:mese_crystal","default:mese_crystal"},
-			{"default:chest","digtron:digtron_core","default:chest"},
-			{"default:mese_crystal","default:mese_crystal","default:mese_crystal"}
+			{"hades_core:mese_crystal","hades_core:mese_crystal","hades_core:mese_crystal"},
+			{"hades_chests:chest","digtron:digtron_core","hades_chests:chest"},
+			{"hades_core:mese_crystal","hades_core:mese_crystal","hades_core:mese_crystal"}
 			}
 })
 
 minetest.register_craft({
 	output = "digtron:inventory_ejector",
 	recipe = {
-			{"default:steel_ingot","default:steel_ingot","default:steel_ingot"},
+			{"hades_core:steel_ingot","hades_core:steel_ingot","hades_core:steel_ingot"},
 			{"","digtron:digtron_core",""},
-			{"","default:steel_ingot",""}
+			{"","hades_core:steel_ingot",""}
 			}
 })
 
@@ -193,7 +193,7 @@ minetest.register_craft({
 	recipe = {
 			{"","",""},
 			{"","digtron:digtron_core",""},
-			{"","default:steel_ingot",""}
+			{"","hades_core:steel_ingot",""}
 			}
 })
 
@@ -201,8 +201,8 @@ minetest.register_craft({
 	output = "digtron:edge_panel",
 	recipe = {
 			{"","",""},
-			{"","digtron:digtron_core","default:steel_ingot"},
-			{"","default:steel_ingot",""}
+			{"","digtron:digtron_core","hades_core:steel_ingot"},
+			{"","hades_core:steel_ingot",""}
 			}
 })
 
@@ -210,8 +210,8 @@ minetest.register_craft({
 	output = "digtron:corner_panel",
 	recipe = {
 			{"","",""},
-			{"","digtron:digtron_core","default:steel_ingot"},
-			{"","default:steel_ingot","default:steel_ingot"}
+			{"","digtron:digtron_core","hades_core:steel_ingot"},
+			{"","hades_core:steel_ingot","hades_core:steel_ingot"}
 			}
 })
 

@@ -4,6 +4,9 @@ local S, NS = dofile(MP.."/intllib.lua")
 
 local modpath_awards = minetest.get_modpath("awards")
 
+gui_bg     = ""
+gui_bg_img = ""
+gui_slots  = ""
 
 local player_permitted = function(pos, player)
 	if player then
@@ -59,8 +62,8 @@ local store_digtron = function(pos, clicker, loaded_node_name, protected)
 		if modpath_awards then
 			-- We're about to tell the awards mod that we're digging a node, but we
 			-- don't want it to count toward any actual awards. Pre-decrement.
-			local data = awards.player(clicker:get_player_name())
-			awards.increment_item_counter(data, "dig", old_node.name, -1)
+			local data = awards.players[clicker:get_player_name()]
+			awards.increment_item_counter(data, "count", old_node.name, -1)
 		end
 		
 		for _, callback in ipairs(minetest.registered_on_dignodes) do
@@ -77,15 +80,8 @@ local store_digtron = function(pos, clicker, loaded_node_name, protected)
 	
 	local meta = minetest.get_meta(pos)
 	meta:set_string("crated_layout", layout_string)
-
-	if protected then
-		-- only set owner if protected
-		meta:set_string("owner", clicker:get_player_name() or "")
-	end
-
-	local titlestring = S("Crated @1-block Digtron", tostring(#layout.all-1))
-	meta:set_string("title", titlestring )
-	meta:set_string("infotext", titlestring .. "\n" .. protection_suffix)
+	meta:set_string("title", S("Crated Digtron"))
+	meta:set_string("infotext", S("Crated Digtron") .. "\n" .. protection_suffix)
 end
 
 minetest.register_node("digtron:empty_crate", {
@@ -93,7 +89,7 @@ minetest.register_node("digtron:empty_crate", {
 	_doc_items_longdesc = digtron.doc.empty_crate_longdesc,
     _doc_items_usagehelp = digtron.doc.empty_crate_usagehelp,
 	groups = {cracky = 3, oddly_breakable_by_hand=3},
-	sounds = default.node_sound_wood_defaults(),
+	sounds = hades_sounds.node_sound_wood_defaults(),
 	tiles = {"digtron_crate.png"},
 	is_ground_content = false,
 	drawtype = "nodebox",
@@ -105,10 +101,6 @@ minetest.register_node("digtron:empty_crate", {
     },
 	paramtype = "light",
 	
-	can_dig = function(pos, player)
-		return player and not minetest.is_protected(pos, player:get_player_name())
-	end,
-
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
 		store_digtron(pos, clicker, "digtron:loaded_crate")
 	end
@@ -119,7 +111,7 @@ minetest.register_node("digtron:empty_locked_crate", {
 	_doc_items_longdesc = digtron.doc.empty_locked_crate_longdesc,
     _doc_items_usagehelp = digtron.doc.empty_locked_crate_usagehelp,
 	groups = {cracky = 3, oddly_breakable_by_hand=3},
-	sounds = default.node_sound_wood_defaults(),
+	sounds = hades_sounds.node_sound_wood_defaults(),
 	tiles = {"digtron_crate.png","digtron_crate.png","digtron_crate.png^digtron_lock.png","digtron_crate.png^digtron_lock.png","digtron_crate.png^digtron_lock.png","digtron_crate.png^digtron_lock.png"},
 	is_ground_content = false,
 	drawtype = "nodebox",
@@ -141,7 +133,7 @@ minetest.register_node("digtron:empty_locked_crate", {
 		meta:set_string("infotext", S("Digtron Crate") .. "\n" .. S("Owned by @1", placer:get_player_name() or ""))
 	end,
 	can_dig = function(pos,player)
-		return player and not minetest.is_protected(pos, player:get_player_name()) and player_permitted(pos, player)
+		return player_permitted(pos,player)
 	end,
 	on_rightclick = function(pos, node, clicker, itemstack, pointed_thing)
 		if player_permitted(pos,clicker) then
@@ -155,9 +147,9 @@ local loaded_formspec_string
 if modpath_doc then
 	loaded_formspec_string =
 	"size[4.1,1.5]" ..
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots ..
+	gui_bg ..
+	gui_bg_img ..
+	gui_slots ..
 	"field[0.3,0.5;4,0.5;title;" .. S("Digtron Name") .. ";${title}]" ..
 	"button_exit[0.0,1.2;1,0.1;save;" .. S("Save\nTitle") .. "]" ..
 	"tooltip[save;" .. S("Saves the title of this Digtron") .. "]" ..
@@ -170,9 +162,9 @@ if modpath_doc then
 else
 	loaded_formspec_string =
 	"size[4,1.5]" ..
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots ..
+	gui_bg ..
+	gui_bg_img ..
+	gui_slots ..
 	"field[0.3,0.5;4,0.5;title;" .. S("Digtron Name") .. ";${title}]" ..
 	"button_exit[0.5,1.2;1,0.1;save;" .. S("Save\nTitle") .. "]" ..
 	"tooltip[show;" .. S("Saves the title of this Digtron") .. "]" ..
@@ -193,7 +185,6 @@ local loaded_on_recieve = function(pos, fields, sender, protected)
 		meta:set_string("title", minetest.formspec_escape(fields.title))
 	end
 	local title = meta:get_string("title")
-	local infotext
 	
 	if protected then
 		infotext = title .. "\n" .. S("Owned by @1", sender:get_player_name())
@@ -263,45 +254,26 @@ end
 
 local loaded_on_dig = function(pos, player, loaded_node_name)
 	local meta = minetest.get_meta(pos)
-	
-	local stack = ItemStack({name=loaded_node_name, count=1, wear=0})
-	local stack_meta = stack:get_meta()
-	stack_meta:set_string("crated_layout", meta:get_string("crated_layout"))
-	stack_meta:set_string("description", meta:get_string("title"))
+	local to_serialize = {title=meta:get_string("title"), layout=meta:get_string("crated_layout")}
+		
+	local stack = ItemStack({name=loaded_node_name, count=1, wear=0, metadata=minetest.serialize(to_serialize)})
 	local inv = player:get_inventory()
 	local stack = inv:add_item("main", stack)
 	if stack:get_count() > 0 then
-		-- prevent crash by not dropping loaded crate (see #44)
-		-- minetest.add_item(pos, stack)
-		return false
+		minetest.add_item(pos, stack)
 	end		
 	-- call on_dignodes callback
 	minetest.remove_node(pos)
 end
 
 local loaded_after_place = function(pos, itemstack)
-
-	-- Older versions of Digtron used this deprecated method for saving layout data on items.
-	-- Maintain backward compatibility here.
-	local deprecated_metadata = itemstack:get_metadata()
-	if deprecated_metadata ~= "" then
-		deprecated_metadata = minetest.deserialize(deprecated_metadata)
-		local meta = minetest.get_meta(pos)
-		meta:set_string("crated_layout", deprecated_metadata.layout)
-		meta:set_string("title", deprecated_metadata.title)
-		meta:set_string("infotext", deprecated_metadata.title)
-		return
-	end
-
-	local stack_meta = itemstack:get_meta()
-	local layout = stack_meta:get_string("crated_layout")
-	local title = stack_meta:get_string("description")
-	if layout ~= "" then
+	local deserialized = minetest.deserialize(itemstack:get_metadata())
+	if deserialized then
 		local meta = minetest.get_meta(pos)
 			
-		meta:set_string("crated_layout", layout)
-		meta:set_string("title", title)
-		meta:set_string("infotext", title)
+		meta:set_string("crated_layout", deserialized.layout)
+		meta:set_string("title", deserialized.title)
+		meta:set_string("infotext", deserialized.title)
 		--meta:set_string("formspec", loaded_formspec(pos, meta)) -- not needed, on_construct handles this
 	end
 end
@@ -313,7 +285,7 @@ minetest.register_node("digtron:loaded_crate", {
 	_digtron_formspec = loaded_formspec,
 	groups = {cracky = 3, oddly_breakable_by_hand=3, not_in_creative_inventory=1, digtron_protected=1},
 	stack_max = 1,
-	sounds = default.node_sound_wood_defaults(),
+	sounds = hades_sounds.node_sound_wood_defaults(),
 	tiles = {"digtron_plate.png^digtron_crate.png"},
 	is_ground_content = false,
 	
@@ -325,17 +297,14 @@ minetest.register_node("digtron:loaded_crate", {
 	on_receive_fields = function(pos, formname, fields, sender)
 		return loaded_on_recieve(pos, fields, sender)
 	end,
-
+		
 	on_dig = function(pos, node, player)
-		if player and not minetest.is_protected(pos, player:get_player_name()) then
-			return loaded_on_dig(pos, player, "digtron:loaded_crate")
-		end
+		return loaded_on_dig(pos, player, "digtron:loaded_crate")
 	end,
 	
 	after_place_node = function(pos, placer, itemstack, pointed_thing)
 		loaded_after_place(pos, itemstack)
 	end,
-	on_drop = function(a, b, c) end -- prevent dropping loaded digtrons, causing server to crash (see #44)
 })
 
 minetest.register_node("digtron:loaded_locked_crate", {
@@ -344,7 +313,7 @@ minetest.register_node("digtron:loaded_locked_crate", {
     _doc_items_usagehelp = digtron.doc.loaded_locked_crate_usagehelp,
 	groups = {cracky = 3, oddly_breakable_by_hand=3, not_in_creative_inventory=1, digtron_protected=1},
 	stack_max = 1,
-	sounds = default.node_sound_wood_defaults(),
+	sounds = hades_sounds.node_sound_wood_defaults(),
 	tiles = {"digtron_plate.png^digtron_crate.png","digtron_plate.png^digtron_crate.png","digtron_plate.png^digtron_crate.png^digtron_lock.png","digtron_plate.png^digtron_crate.png^digtron_lock.png","digtron_plate.png^digtron_crate.png^digtron_lock.png","digtron_plate.png^digtron_crate.png^digtron_lock.png"},
 	is_ground_content = false,
 	
@@ -352,11 +321,9 @@ minetest.register_node("digtron:loaded_locked_crate", {
 		local meta = minetest.get_meta(pos)
 		meta:set_string("owner", "")
 	end,
---	can_dig = function(pos,node,player)
---		return player and not minetest.is_protected(pos, player:get_player_name()) and player_permitted(pos,player)
---	end,
+	
 	on_dig = function(pos, node, player)
-		if player and not minetest.is_protected(pos, player:get_player_name()) and player_permitted(pos,player) then
+		if player_permitted(pos,player) then
 			return loaded_on_dig(pos, player, "digtron:loaded_locked_crate")
 		else
 			return false
@@ -378,8 +345,7 @@ minetest.register_node("digtron:loaded_locked_crate", {
 				"digtron:loaded_locked_crate"..minetest.pos_to_string(pos),
 				loaded_formspec_string:gsub("${title}", meta:get_string("title"), 1))
 		end
-	end,
-	on_drop = function(a, b, c) end -- prevent dropping loaded digtrons, causing server to crash
+	end,	
 })
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)

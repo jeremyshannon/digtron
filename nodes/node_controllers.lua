@@ -2,6 +2,11 @@
 local MP = minetest.get_modpath(minetest.get_current_modname())
 local S, NS = dofile(MP.."/intllib.lua")
 
+gui_bg     = ""
+gui_bg_img = ""
+gui_slots  = ""
+
+
 local controller_nodebox ={
 	{-0.3125, -0.3125, -0.3125, 0.3125, 0.3125, 0.3125}, -- Core
 	{-0.1875, 0.3125, -0.1875, 0.1875, 0.5, 0.1875}, -- +y_connector
@@ -14,8 +19,6 @@ local controller_nodebox ={
 	{0.125, -0.5, -0.5, 0.5, -0.125, -0.3125}, -- back_connector_2
 	{-0.5, -0.5, -0.5, -0.125, -0.125, -0.3125}, -- back_connector_4
 }
-
-local node_inventory_table = {type="node"} -- a reusable parameter for get_inventory calls, set the pos parameter before using.
 
 -- Master controller. Most complicated part of the whole system. Determines which direction a digtron moves and triggers all of its component parts.
 minetest.register_node("digtron:controller", {
@@ -78,9 +81,9 @@ minetest.register_node("digtron:controller", {
 ---------------------------------------------------------------------------------------------------------------
 
 local auto_formspec = "size[8,6.2]" ..
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots ..
+	gui_bg ..
+	gui_bg_img ..
+	gui_slots ..
 	"container[2.0,0]" ..
 	"field[0.0,0.8;1,0.1;cycles;" .. S("Cycles").. ";${cycles}]" ..
 	"tooltip[cycles;" .. S("When triggered, this controller will try to run for the given number of cycles.\nThe cycle count will decrement as it runs, so if it gets halted by a problem\nyou can fix the problem and restart.").. "]" ..
@@ -98,7 +101,7 @@ local auto_formspec = "size[8,6.2]" ..
 	"label[3.0,1.5;" .. S("Stop block").. "]"	..
 	"container_end[]" ..
 	"list[current_player;main;0,2.3;8,1;]" ..
-	default.get_hotbar_bg(0,2.3) ..
+	"" ..
 	"list[current_player;main;0,3.5;8,3;8]" ..
 	"listring[current_player;main]" ..
 	"listring[current_name;stop]"
@@ -129,9 +132,6 @@ local function auto_cycle(pos)
 			status = status .. "\n" .. S("Cycles remaining: @1", cycle) .. "\n" .. S("Halted!")
 			meta:set_string("infotext", status)
 			if return_code == 1 then --return code 1 happens when there's unloaded nodes adjacent, just keep trying.
-				if digtron.config.emerge_unloaded_mapblocks then
-					minetest.emerge_area(vector.add(pos, -80), vector.add(pos, 80))
-				end
 				minetest.after(meta:get_int("period"), auto_cycle, newpos)
 			else
 				meta:set_string("formspec", auto_formspec)
@@ -144,16 +144,13 @@ local function auto_cycle(pos)
 		end
 		return
 	end
-
+	
 	local newpos, status, return_code = digtron.execute_dig_cycle(pos, player)
-
+	
 	if vector.equals(pos, newpos) then
 		status = status .. "\n" .. S("Cycles remaining: @1", cycle) .. "\n" .. S("Halted!")
 		meta:set_string("infotext", status)
-		if return_code == 1 then --return code 1 happens when there's unloaded nodes adjacent, call emerge and keep trying.
-			if digtron.config.emerge_unloaded_mapblocks then
-				minetest.emerge_area(vector.add(pos, -80), vector.add(pos, 80))
-			end
+		if return_code == 1 then --return code 1 happens when there's unloaded nodes adjacent, just keep trying.
 			minetest.after(meta:get_int("period"), auto_cycle, newpos)
 		else
 			meta:set_string("formspec", auto_formspec)
@@ -222,15 +219,13 @@ minetest.register_node("digtron:auto_controller", {
 		if minetest.get_item_group(stack:get_name(), "digtron") ~= 0 then
 			return 0 -- pointless setting a Digtron node as a stop block
 		end	
-		node_inventory_table.pos = pos
-		local inv = minetest.get_inventory(node_inventory_table)
+		local inv = minetest.get_inventory({type="node", pos=pos})
 		inv:set_stack(listname, index, stack:take_item(1))
 		return 0
 	end,
 	
 	allow_metadata_inventory_take = function(pos, listname, index, stack, player)
-		node_inventory_table.pos = pos
-		local inv = minetest.get_inventory(node_inventory_table)
+		local inv = minetest.get_inventory({type="node", pos=pos})
 		inv:set_stack(listname, index, ItemStack(""))
 		return 0
 	end,
@@ -270,7 +265,6 @@ minetest.register_node("digtron:auto_controller", {
 			local node = minetest.get_node(pos)
 			local controlling_coordinate = digtron.get_controlling_coordinate(pos, node.param2)
 			
-			offset = offset or 0
 			local newpos = pos
 			local markerpos = {x=newpos.x, y=newpos.y, z=newpos.z}
 			local x_pos = math.floor((newpos[controlling_coordinate]+offset)/slope)*slope - offset
@@ -296,6 +290,10 @@ minetest.register_node("digtron:auto_controller", {
 		meta:set_string("infotext", meta:get_string("infotext") .. "\n" .. S("Interrupted!"))
 		meta:set_string("waiting", "true")
 		meta:set_string("formspec", auto_formspec)
+	end,
+	
+	on_timer = function(pos, elapsed)
+		minetest.get_meta(pos):set_string("waiting", nil)
 	end,
 })
 
@@ -348,4 +346,5 @@ minetest.register_node("digtron:pusher", {
 	on_timer = function(pos, elapsed)
 		minetest.get_meta(pos):set_string("waiting", nil)
 	end,
+
 })

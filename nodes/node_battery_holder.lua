@@ -2,21 +2,24 @@
 local MP = minetest.get_modpath(minetest.get_current_modname())
 local S, NS = dofile(MP.."/intllib.lua")
 
+gui_bg     = ""
+gui_bg_img = ""
+gui_slots  = ""
 
 -- Battery storage. Controller node draws electrical power from here.
 -- Note that batttery boxes are digtron group 7.
 
 local battery_holder_formspec_string = "size[8,9.3]" ..
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots ..
+	gui_bg ..
+	gui_bg_img ..
+	gui_slots ..
 	"label[0,0;" .. S("Batteries") .. "]" ..
 	"list[current_name;batteries;0,0.6;8,4;]" ..
 	"list[current_player;main;0,5.15;8,1;]" ..
 	"list[current_player;main;0,6.38;8,3;8]" ..
 	"listring[current_name;batteries]" ..
 	"listring[current_player;main]" ..
-	default.get_hotbar_bg(0,5.15)
+	""
 
 local battery_holder_formspec = function(pos, meta)
 	return battery_holder_formspec_string
@@ -63,13 +66,13 @@ minetest.register_node("digtron:battery_holder", {
 		inv:set_size("batteries", 8*4)
 	end,
 	
-	-- Allow all items with energy storage to be placed in the inventory
+	-- Only allow RE batteries to be placed in the inventory
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
 		if listname == "batteries" then
 			local node_name = stack:get_name()
                                                  
-			-- Allow all items with energy storage from technic mod
-			if technic.power_tools[node_name] ~= nil then                            
+			-- Only allow RE batteries from technic mod
+			if node_name == "technic:battery" then                            
 				local meta = stack:get_metadata()
 				local md = minetest.deserialize(meta)
 				-- And specifically if they hold any charge

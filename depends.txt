@@ -1,4 +1,5 @@
-default
+hades_core
+hades_sounds
 pipeworks?
 doc?
 hopper?

@@ -2,18 +2,22 @@
 local MP = minetest.get_modpath(minetest.get_current_modname())
 local S, NS = dofile(MP.."/intllib.lua")
 
+gui_bg     = ""
+gui_bg_img = ""
+gui_slots  = ""
+
 local inventory_formspec_string = 
 	"size[9,9.3]" ..
-	default.gui_bg ..
-	default.gui_bg_img ..
-	default.gui_slots ..
+	gui_bg ..
+	gui_bg_img ..
+	gui_slots ..
 	"label[0,0;" .. S("Digtron components") .. "]" ..
 	"list[current_name;main;0,0.6;8,4;]" ..
 	"list[current_player;main;0,5.15;8,1;]" ..
 	"list[current_player;main;0,6.38;8,3;8]" ..
 	"listring[current_name;main]" ..
 	"listring[current_player;main]" ..
-	default.get_hotbar_bg(0,5.15)..
+	"" ..
 	"button_exit[8,3.5;1,1;duplicate;"..S("Duplicate").."]" ..
 	"tooltip[duplicate;" .. S("Puts a copy of the adjacent Digtron into an empty crate\nlocated at the output side of the duplicator,\nusing components from the duplicator's inventory.") .. "]"
 
@@ -143,32 +147,26 @@ minetest.register_node("digtron:duplicator", {
 				inv:remove_item("main", ItemStack({name=name, count=count}))
 			end
 
-			-- clear inventories of image's nodes		
-			if layout.inventories ~= nil then
-				for _, node_image in pairs(layout.inventories) do
-					local main_inventory = node_image.meta.inventory.main
-					if type(main_inventory) ~= "table" then
-						main_inventory = {}
-					end
-					for index, _ in pairs(main_inventory) do
-						main_inventory[index] = ItemStack(nil)
-					end
+			-- clear inventories of image's nodes			
+			for _, node_image in pairs(layout.inventories) do
+				local main_inventory = node_image.meta.inventory.main
+				if type(main_inventory) ~= "table" then
+					main_inventory = {}
+				end
+				for index, _ in pairs(main_inventory) do
+					main_inventory[index] = ItemStack(nil)
 				end
 			end
-			if layout.fuelstores ~= nil then
-				for _, node_image in pairs(layout.fuelstores) do
-					local fuel_inventory = node_image.meta.inventory.fuel
-					for index, _ in pairs(fuel_inventory) do
-						fuel_inventory[index] = ItemStack(nil)
-					end
+			for _, node_image in pairs(layout.fuelstores) do
+				local fuel_inventory = node_image.meta.inventory.fuel
+				for index, _ in pairs(fuel_inventory) do
+					fuel_inventory[index] = ItemStack(nil)
 				end
 			end
-			if layout.battery_holders ~= nil then
-				for _, node_image in pairs(layout.battery_holders) do
-					local battery_inventory = node_image.meta.inventory.batteries
-					for index, _ in pairs(battery_inventory) do
-						battery_inventory[index] = ItemStack(nil)
-					end
+			for _, node_image in pairs(layout.battery_holders) do
+				local battery_inventory = node_image.meta.inventory.batteries
+				for index, _ in pairs(battery_inventory) do
+					battery_inventory[index] = ItemStack(nil)
 				end
 			end
 
@@ -178,10 +176,8 @@ minetest.register_node("digtron:duplicator", {
 			minetest.set_node(target_pos, {name="digtron:loaded_crate", param1=node.param1, param2=node.param2})
 			local target_meta = minetest.get_meta(target_pos)
 			target_meta:set_string("crated_layout", layout_string)
-			
-			local titlestring = S("Crated @1-block Digtron", tostring(#layout.all-1))
-			target_meta:set_string("title", titlestring)
-			target_meta:set_string("infotext", titlestring)
+			target_meta:set_string("title", S("Crated Digtron"))
+			target_meta:set_string("infotext", S("Crated Digtron"))			
 			minetest.sound_play("machine1", {gain=1.0, pos=pos})
 		end
 	end,
